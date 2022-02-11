@@ -105,24 +105,24 @@ class TestFastRun(unittest.TestCase):
     def test_fastrun_label(self):
         # tests fastrun label, description and aliases, and label in another language
         fast_run_base_filter = {'P361': 'Q18589965'}
-        item = WikibaseIntegrator().item.get('Q2')
+        item = WikibaseIntegrator().item.get('Q2', )
         item.init_fastrun(base_filter=fast_run_base_filter)
         item.init_fastrun(base_filter=fast_run_base_filter)  # Test if we found the same FastRunContainer
         item.claims.add(datatypes.ExternalID(value='/m/02j71', prop_nr='P646'))
 
         frc = wbi_fastrun.FastRunContainer(base_filter={'P699': ''}, base_data_type=BaseDataType)
 
-        assert item.labels.get(language='en') == "Earth"
-        descr = item.descriptions.get(language='en')
+        assert item.labels.get(,, == "Earth"
+        descr = item.descriptions.get(,,
         assert len(descr) > 3
-        assert "Terra" in item.aliases.get()
+        assert "Terra" in item.aliases.get(,,
 
         assert list(item.fast_run_container.get_language_data("Q2", 'en', 'label'))[0] == "Earth"
         assert item.fast_run_container.check_language_data("Q2", ['not the Earth'], 'en', 'label')
-        assert "Terra" in item.aliases.get()
-        assert "planet" in item.descriptions.get()
+        assert "Terra" in item.aliases.get(,,
+        assert "planet" in item.descriptions.get(,,
 
-        assert item.labels.get('es') == "Tierra"
+        assert item.labels.get('es',,, == "Tierra"
 
         item.descriptions.set(value=descr)
         item.descriptions.set(value="fghjkl")
@@ -140,31 +140,31 @@ class TestFastRun(unittest.TestCase):
         frc.check_language_data("Q2", [], 'ak', 'aliases')
         frc.check_language_data("Q2", ['sdf', 'sdd'], 'ak', 'aliases')
 
-        item.labels.get(language="ak")
-        item.descriptions.get(language='ak')
-        item.aliases.get(language="ak")
+        item.labels.get(,,
+        item.descriptions.get(,,
+        item.aliases.get(,,
         item.labels.set(value="label", language="ak")
         item.descriptions.set(value="d", language="ak")
         item.aliases.set(values=["a"], language="ak", if_exists='APPEND')
 
 
 def test_sitelinks():
-    item = wbi.item.get('Q622901')
+    item = wbi.item.get('Q622901', )
     item.claims.add(datatypes.Item(value='Q12136', prop_nr='P31'))
-    assert item.sitelinks.get('enwiki') is not None
+    assert item.sitelinks.get('enwiki',,, is not None
     item.sitelinks.set(site="enwiki", title="something")
-    assert item.sitelinks.get('enwiki').title == "something"
-    assert item.sitelinks.get('enwiki') is not None
+    assert item.sitelinks.get('enwiki',,,.title == "something"
+    assert item.sitelinks.get('enwiki',,, is not None
 
 
 def test_nositelinks():
     # this item doesn't and probably wont ever have any sitelinks (but who knows?? maybe one day..)
-    item = wbi.item.get('Q27869338')
+    item = wbi.item.get('Q27869338', )
     item.claims.add(datatypes.Item(value='Q5', prop_nr='P31'))
-    assert item.sitelinks.get('enwiki') is None
+    assert item.sitelinks.get('enwiki',,, is None
     item.sitelinks.set(site="enwiki", title="something")
-    assert item.sitelinks.get('enwiki').title == "something"
-    assert item.sitelinks.get('enwiki') is not None
+    assert item.sitelinks.get('enwiki',,,.title == "something"
+    assert item.sitelinks.get('enwiki',,, is not None
 
 
 ####

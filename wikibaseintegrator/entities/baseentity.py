@@ -1,4 +1,9 @@
+from __future__ import annotations
+
+from typing import List, TYPE_CHECKING
+
 import simplejson
+from pydantic import BaseModel
 
 from wikibaseintegrator.datatypes import BaseDataType
 from wikibaseintegrator.models.claims import Claims, Claim
@@ -7,9 +12,17 @@ from wikibaseintegrator.wbi_exceptions import SearchOnlyError, NonUniqueLabelDes
 from wikibaseintegrator.wbi_fastrun import FastRunContainer
 from wikibaseintegrator.wbi_helpers import mediawiki_api_call_helper
 
+if TYPE_CHECKING:
+    from wikibaseintegrator import WikibaseIntegrator
 
-class BaseEntity(object):
+
+class BaseEntity(BaseModel):
     fast_run_store = []
+    api: WikibaseIntegrator
+    lastrevid = None
+    type = None
+    id = None
+    claims: List[Claim] = None
 
     ETYPE = 'base-entity'
 
@@ -138,10 +151,11 @@ class BaseEntity(object):
             print(payload)
 
         try:
-            json_data = mediawiki_api_call_helper(data=payload, login=self.api.login, allow_anonymous=allow_anonymous, is_bot=self.api.is_bot)
+            json_data = mediawiki_api_call_helper(data=payload, login=self.api.login, allow_anonymous=allow_anonymous,
+                                                  is_bot=self.api.is_bot)
 
             if 'error' in json_data and 'messages' in json_data['error']:
-                error_msg_names = set(x.get('name') for x in json_data['error']['messages'])
+                error_msg_names = set(x.get('name', ) for x in json_data['error']['messages'])
                 if 'wikibase-validator-label-with-description-conflict' in error_msg_names:
                     raise NonUniqueLabelDescriptionPairError(json_data)
                 else:
@@ -165,7 +179,8 @@ class BaseEntity(object):
         print('Initialize Fast Run init_fastrun')
         # We search if we already have a FastRunContainer with the same parameters to re-use it
         for c in BaseEntity.fast_run_store:
-            if (c.base_filter == base_filter) and (c.use_refs == use_refs) and (c.case_insensitive == case_insensitive) and (
+            if (c.base_filter == base_filter) and (c.use_refs == use_refs) and (
+                    c.case_insensitive == case_insensitive) and (
                     c.sparql_endpoint_url == config['SPARQL_ENDPOINT_URL']):
                 self.fast_run_container = c
                 self.fast_run_container.current_qid = ''

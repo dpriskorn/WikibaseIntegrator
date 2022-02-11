@@ -3,6 +3,8 @@ from __future__ import annotations
 import copy
 from typing import Union
 
+from pydantic import BaseModel
+
 from wikibaseintegrator.models.qualifiers import Qualifiers
 from wikibaseintegrator.models.references import References
 from wikibaseintegrator.models.snaks import Snak
@@ -112,7 +114,7 @@ class Claims:
         )
 
 
-class Claim:
+class Claim(BaseModel):
     DTYPE = 'claim'
     subclasses = []
 
