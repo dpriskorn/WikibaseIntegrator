@@ -430,3 +430,34 @@ class Claim(BaseModel):
     @abstractmethod
     def get_sparql_value(self) -> str:
         pass
+
+    def get_ttl(self) -> str:
+        # TODO finish
+        """
+        Converts a claim to a TTL (Turtle) format string.
+        """
+        ttl = ""
+        snak_type = self.mainsnak.snak_type
+
+        # Handle different snak types (wikibase-item, string, quantity, time, etc.)
+        if snak_type == 'value':
+            value = self.mainsnak.datavalue.value
+            # how do we know what type it is?
+            # datatype?
+            from wikibaseintegrator.datatypes import Item
+            from wikibaseintegrator.datatypes import String
+            from wikibaseintegrator.datatypes import Quantity
+            from wikibaseintegrator.datatypes import Time
+            from wikibaseintegrator.datatypes import GlobeCoordinate
+            if isinstance(value, Item):  # wikibase-item (entity reference)
+                ttl = f"<http://www.wikidata.org/entity/{value.id}>"
+            elif isinstance(value, String):  # string value
+                ttl = f'"{value}"'
+            elif isinstance(value, Quantity):  # quantity (number with unit)
+                ttl = f'"{value.amount}"^^<http://www.w3.org/2001/XMLSchema#decimal>'
+            elif isinstance(value, Time):  # time value
+                ttl = f'"{value.time}"^^<http://www.w3.org/2001/XMLSchema#dateTime>'
+            elif isinstance(value, GlobeCoordinate):  # geographical coordinates
+                ttl = f'"{value.latitude} {value.longitude}"^^<http://www.w3.org/2001/XMLSchema#string>'
+
+        return f"<http://www.wikidata.org/entity/{self.mainsnak.property_number}> {ttl} ."

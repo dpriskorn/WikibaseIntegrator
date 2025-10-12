@@ -87,3 +87,6 @@ class Quantity(BaseDataType):
     def parse_sparql_value(self, value, type='literal', unit='1') -> bool:
         self.set_value(amount=value, unit=unit)
         return True
+
+    def get_ttl_value(self) -> str:
+        return '"' + format_amount(self.mainsnak.datavalue['value']['amount']) + '"^^xsd:decimal'
